@@ -1,0 +1,62 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Fly Trade · Paper Lab</title>
+<style>
+:root{color-scheme:dark;--bg:#0b111b;--panel:#121e2c;--line:#26354a;--ink:#edf2f7;--muted:#92a4bc;--mint:#79ecc5;--bad:#ffa098}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font:15px system-ui,-apple-system,sans-serif}
+main{max-width:1250px;margin:auto;padding:32px}header{display:flex;align-items:center;justify-content:space-between;margin:8px 0 32px;gap:16px}
+h1{font-size:27px;letter-spacing:-1px;margin:0}h2{font-size:17px;margin:0 0 20px;font-weight:600}.sub{color:var(--muted);margin:6px 0 0;font-size:13px}
+.badge{border:1px solid #36534e;color:var(--mint);padding:7px 12px;border-radius:20px;font-size:12px;white-space:nowrap}
+.intro{display:flex;justify-content:space-between;align-items:end;margin-bottom:24px;gap:15px}.intro h2{font-size:25px;margin:0 0 7px}
+.grid{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin:18px 0}.card,.panel{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:22px}
+.label{color:var(--muted);font-size:12px;text-transform:uppercase;letter-spacing:1px}.value{font-size:29px;letter-spacing:-1px;margin:12px 0 4px;font-variant-numeric:tabular-nums}
+.positive{color:var(--mint)}.negative{color:var(--bad)}.panels{display:grid;grid-template-columns:2fr 1fr;gap:16px;margin:18px 0}.panel{min-width:0}
+.status{color:var(--mint)}.error{padding:14px 18px;border:1px solid #795242;background:#32211c;border-radius:8px;margin-bottom:20px;color:#ffccb2;display:none}
+svg{width:100%;height:220px;overflow:visible}.chart-labels{display:flex;justify-content:space-between;font-size:12px;color:var(--muted)}
+table{width:100%;border-collapse:collapse;white-space:nowrap;text-align:left;font-size:13px}th{font-weight:500;color:var(--muted);padding:0 10px 14px 0}td{padding:13px 10px 13px 0;border-top:1px solid var(--line);font-variant-numeric:tabular-nums}
+.scroll{overflow:auto}.empty{color:var(--muted);padding:25px 0;font-size:14px}.kv{display:flex;justify-content:space-between;gap:15px;padding:12px 0;border-bottom:1px solid var(--line);font-size:13px}.kv span:first-child{color:var(--muted)}
+footer{color:var(--muted);font-size:12px;line-height:1.7;margin-top:25px}.section{margin-top:18px}a{color:var(--mint)}
+@media(max-width:850px){.grid{grid-template-columns:repeat(2,1fr)}.panels{grid-template-columns:1fr}main{padding:20px}.intro{align-items:start;flex-direction:column}}
+@media(max-width:450px){.grid{grid-template-columns:1fr 1fr;gap:10px}.card{padding:16px}.value{font-size:22px}header{align-items:start}}
+</style></head>
+<body><main>
+<header><div><h1>Fly Trade<span style="color:var(--mint)">.</span></h1><p class="sub">CRYPTO RESEARCH / PAPER LAB</p></div><span class="badge">SIMULATED MONEY</span></header>
+<div class="intro"><div><h2>Your trading experiment</h2><p class="sub" id="model">Preparing your experiment…</p></div><div><div class="status" id="status">Connecting</div><div class="sub" id="updated">Waiting for first update</div></div></div>
+<div id="error" class="error" role="alert"></div>
+<div class="grid">
+<div class="card"><div class="label">Portfolio equity</div><div class="value" id="equity">—</div><div class="sub" id="return">Virtual USD</div></div>
+<div class="card"><div class="label">Available cash</div><div class="value" id="cash">—</div><div class="sub">Shared across all markets</div></div>
+<div class="card"><div class="label">Max drawdown</div><div class="value" id="drawdown">—</div><div class="sub">From portfolio peak</div></div>
+<div class="card"><div class="label">Closed trades</div><div class="value" id="trades">—</div><div class="sub" id="fees">Includes simulated fees</div></div>
+</div>
+<div class="panels"><section class="panel"><h2 id="chart-title">Equity over time</h2><svg id="chart" viewBox="0 0 700 210" role="img" aria-label="Portfolio equity chart"></svg><div class="chart-labels"><span id="chart-start"></span><span id="chart-end"></span></div></section>
+<section class="panel"><h2>Held-out historical test</h2><div id="research" class="empty">History and training are in progress.</div></section></div>
+<section class="panel section"><h2>Markets & signals</h2><div class="scroll"><table><thead><tr><th>Market</th><th>Observed price</th><th>Predicted return</th><th>Entry threshold</th><th>Position</th><th>Signal</th></tr></thead><tbody id="markets"></tbody></table></div></section>
+<section class="panel section"><h2>Recent simulated fills</h2><div class="scroll"><table><thead><tr><th>Time</th><th>Market</th><th>Side</th><th>Quantity</th><th>Price</th><th>Fee</th><th>Reason</th></tr></thead><tbody id="fills"></tbody></table></div><p class="empty" id="no-fills">No paper fills yet. The model may stay in cash when its expected return does not cover costs.</p></section>
+<footer>Paper trading uses current market quotes and a virtual wallet. Historical tests use candle-based fill assumptions. Stops are evaluated while the program runs and market data is available. Neither mode guarantees real execution or future profits.<br>Run details, historical data snapshots, and CSV exports are saved in your configured data directory. Refreshes every 5 seconds.</footer>
+</main><script>
+const $=id=>document.getElementById(id), usd=n=>Number(n).toLocaleString(undefined,{style:'currency',currency:'USD',maximumFractionDigits:2});
+const pct=n=>n==null?'—':Number(n).toFixed(2)+'%', when=t=>new Date(t*1000).toLocaleString();
+function text(id,value){$(id).textContent=value}function cell(tr,value){const td=document.createElement('td');td.textContent=value;tr.appendChild(td)}
+function row(body,values){const tr=document.createElement('tr');values.forEach(v=>cell(tr,v));body.appendChild(tr)}
+function kv(parent,key,value){const div=document.createElement('div');div.className='kv';[key,value].forEach(v=>{const span=document.createElement('span');span.textContent=v;div.appendChild(span)});parent.appendChild(div)}
+function chart(points){const svg=$('chart');svg.replaceChildren();if(!points?.length)return;const data=points.filter((_,i)=>i%Math.max(1,Math.floor(points.length/600))===0);if(data.at(-1)!==points.at(-1))data.push(points.at(-1));
+const low=Math.min(...data.map(p=>p.equity)),high=Math.max(...data.map(p=>p.equity)),range=Math.max(high-low,Math.abs(high)*.002,1);const y=v=>190-(v-low)/range*165;
+const make=(tag,attrs)=>{const e=document.createElementNS('http://www.w3.org/2000/svg',tag);Object.entries(attrs).forEach(([k,v])=>e.setAttribute(k,v));svg.appendChild(e);return e};
+[25,107,190].forEach(y=>make('line',{x1:0,x2:700,y1:y,y2:y,stroke:'#26354a','stroke-dasharray':'4 5'}));
+const d=data.map((p,i)=>(i?'L':'M')+(i*700/Math.max(data.length-1,1)).toFixed(1)+','+y(p.equity).toFixed(1)).join(' ');
+make('path',{d:d+' L700,210 L0,210 Z',fill:'#79ecc510'});make('path',{d,fill:'none',stroke:'#79ecc5','stroke-width':2.5});text('chart-start',when(data[0].timestamp));text('chart-end',when(data.at(-1).timestamp));}
+async function refresh(){try{const response=await fetch('/api/status',{cache:'no-store'});if(!response.ok)throw Error('Dashboard data unavailable');const {paper:p,report:r,progress:g}=await response.json();
+text('status',p?.status||g?.message||'Ready');text('updated',p?.last_poll?'Last market update: '+new Date(p.last_poll).toLocaleTimeString():'');
+text('model',r?(r.synthetic?'SYNTHETIC DEMO · ':'')+r.model_description:'Downloading history and preparing the model');
+const err=p?.last_error||g?.error; $('error').style.display=err?'block':'none';text('error',err||'');
+const m=p?.metrics||r?.test;if(m){text('equity',usd(m.final_equity));text('cash',usd(p?.wallet.cash??m.final_equity));text('return',pct(m.return_pct)+' total return');$('return').className='sub '+(m.return_pct>=0?'positive':'negative');text('drawdown',pct(m.max_drawdown_pct));text('trades',m.closed_trades);text('fees',usd(m.fees_paid)+' in fees');}
+text('chart-title',p?'Forward paper equity':r?.synthetic?'Synthetic demo equity':'Held-out historical equity');chart(p?.wallet.curve?.length?p.wallet.curve:r?.equity_curve);
+$('research').replaceChildren();$('research').className='';if(r){kv($('research'),'Model return',pct(r.test.return_pct));kv($('research'),'Buy & hold',pct(r.buy_and_hold.return_pct));kv($('research'),'EMA baseline',pct(r.ema_baseline.return_pct));kv($('research'),'Cash baseline','0.00%');kv($('research'),'Test trades',r.test.closed_trades);kv($('research'),'Candles per market',r.candles_per_symbol);kv($('research'),'Fees / side',r.config.risk.fee_bps+' bps');}
+$('markets').replaceChildren();(r?.symbols||[]).forEach(s=>{const q=p?.signals[s],pos=p?.wallet.positions[s];row($('markets'),[s,q?usd(q.quote.mid):'Waiting',q?pct(q.prediction*100):'—',r.thresholds[s]===1?'Cash selected':pct(r.thresholds[s]*100),pos?pos.quantity.toFixed(6):'Cash',q?.decision||'Waiting for live data']);});
+const fills=p?.wallet.fills||[];$('fills').replaceChildren();fills.slice(-15).reverse().forEach(f=>row($('fills'),[when(f.timestamp),f.symbol,f.side,f.quantity.toFixed(6),usd(f.price),usd(f.fee),f.reason]));$('no-fills').style.display=fills.length?'none':'block';
+}catch(e){text('status','Disconnected');$('error').style.display='block';text('error','The local program is not responding. Start Fly Trade to resume updates.');}}
+refresh();setInterval(refresh,5000);
+</script></body></html>

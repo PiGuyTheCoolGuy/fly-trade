@@ -1,0 +1,40 @@
+# All trading uses virtual money. This program has no exchange-order API.
+[market]
+symbols = ["BTC-USD", "ETH-USD", "SOL-USD"]
+timeframe = 300                 # seconds: 60, 300, 900, 3600, 21600, 86400
+history_days = 90
+poll_seconds = 15
+request_interval = 0.35
+timeout_seconds = 20
+
+[model]
+kind = "mushroom"              # mushroom (fly-inspired) or flywire (real graph)
+seed = 42
+hidden_size = 256
+active_fraction = 0.10
+ridge = 10.0
+horizon = 12                   # 12 x 5 minutes = one-hour prediction
+train_fraction = 0.60
+validation_fraction = 0.20
+brain_neurons = 2048           # flywire only; 0 = all neurons, much slower
+brain_steps = 3
+
+[risk]
+initial_cash = 10000.0         # TOTAL shared paper wallet, not per coin
+max_position_fraction = 0.20
+max_total_exposure = 0.60
+risk_per_trade = 0.005
+stop_loss = 0.02
+take_profit = 0.04
+max_hold_bars = 72             # six hours with five-minute candles
+daily_loss_limit = 0.03        # UTC; blocks entries until next day
+max_drawdown = 0.10            # latches a halt for this paper wallet
+fee_bps = 60.0                 # ASSUMPTION per side; set your actual fee tier
+slippage_bps = 5.0             # adverse fill on every trade
+spread_bps = 10.0              # full assumed spread in backtests only
+min_order = 10.0
+
+[app]
+data_dir = "data"
+dashboard_port = 8787          # dashboard binds to 127.0.0.1
+quote_max_age_seconds = 60

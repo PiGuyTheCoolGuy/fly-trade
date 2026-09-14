@@ -1,0 +1,20 @@
+[Unit]
+Description=Fly Trade virtual-money crypto experiment
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+# Replace YOUR_USER and paths before installing this example.
+User=YOUR_USER
+WorkingDirectory=/home/YOUR_USER/fly-trade
+ExecStart=/home/YOUR_USER/fly-trade/.venv/bin/python run.py
+Restart=on-failure
+RestartSec=30
+TimeoutStopSec=180
+NoNewPrivileges=true
+PrivateTmp=true
+UMask=0077
+
+[Install]
+WantedBy=multi-user.target
