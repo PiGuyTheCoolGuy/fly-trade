@@ -11,9 +11,8 @@ account. Future live execution will be a separate development step.
 
 ## Start on your Ubuntu server
 
-Install **Python 3.11 or newer**, Git, and Python's venv support. Check with
-`python3 --version`. Ubuntu 22.04's original Python 3.10 is too old; use an installed
-3.11+ interpreter (see the manual setup below).
+Install **Python 3.10 or newer**, Git, and Python's venv support. Check with
+`python3 --version`. Ubuntu 22.04's standard Python 3.10 is supported.
 
 ```bash
 git clone https://github.com/PiGuyTheCoolGuy/fly-trade.git
@@ -39,7 +38,7 @@ remain open in the virtual wallet and stop orders are not monitored.
 
 ## Start on Windows
 
-Install Python 3.11+ and Git. In PowerShell:
+Install Python 3.10+ and Git. In PowerShell:
 
 ```powershell
 git clone https://github.com/PiGuyTheCoolGuy/fly-trade.git
@@ -270,7 +269,7 @@ limits, risk halts, download pagination/resumption, rate-limit retries, invalid
 data, stale/auction quotes, exact model round trips, separate test/deployment
 artifacts, paper restart idempotency, outages, config/model mismatch protection,
 and dashboard responses. GitHub Actions runs the suite on Windows and Linux with
-Python 3.11 and 3.12. See [`docs/VALIDATION.md`](docs/VALIDATION.md) for the development
+Python 3.10, 3.11, and 3.12. See [`docs/VALIDATION.md`](docs/VALIDATION.md) for the development
 verification record and limitations.
 
 ## Troubleshooting
@@ -286,7 +285,7 @@ verification record and limitations.
   status. A quiet wallet can be correct, especially with costly intraday turnover.
 - **Settings changed:** select a new data directory to begin an independent run.
 - **Dashboard port busy:** change `app.dashboard_port`, or use `run --no-dashboard`.
-- **`venv` / Python error:** install venv support for the 3.11+ interpreter you use.
+- **`venv` / Python error:** install venv support for the Python 3.10+ interpreter you use.
   You can create `.venv` manually as shown above.
 
 ## Limits of the simulator

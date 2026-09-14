@@ -22,8 +22,8 @@ software tests, not financial performance evidence.
   live Coinbase endpoint timed out in the development workspace, so successful
   live Coinbase downloads and a sustained live forward-paper session were **not
   verified here**. The program's live adapter was tested using controlled responses.
-- Windows launch scripts and Docker/systemd examples are provided; Windows and
-  Linux tests are configured in GitHub Actions. A locally passing suite is not a
+- Windows launch scripts and Docker/systemd examples are provided; Python 3.10,
+  3.11, and 3.12 on Windows and Linux are configured in GitHub Actions. A locally passing suite is not a
   claim that every deployment environment was exercised.
 
 No real-money trading was performed. No historical-market profitability claim is
