@@ -16,6 +16,8 @@ software tests, not financial performance evidence.
   verification. The 138,639-neuron source produced a 2,048-neuron subgraph with
   159,635 nonzero directed connections. This is a simplified graph adapter,
   not a reproduction of the upstream biological simulation.
+  A complete 1,200-bar synthetic training/evaluation run also completed using
+  this downloaded graph.
 - Coinbase's documented endpoint formats were checked. Direct requests to the
   live Coinbase endpoint timed out in the development workspace, so successful
   live Coinbase downloads and a sustained live forward-paper session were **not

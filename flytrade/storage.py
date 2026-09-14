@@ -67,7 +67,9 @@ class ProcessLock:
         self.handle.seek(0)
         if os.name == "nt":
             import msvcrt
-            if self.handle.read(1) == b"":
+            # Inspect file size without reading a byte that another Windows
+            # process may already have locked.
+            if os.fstat(self.handle.fileno()).st_size == 0:
                 self.handle.write(b"0")
                 self.handle.flush()
             self.handle.seek(0)
