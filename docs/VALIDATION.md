@@ -1,12 +1,16 @@
 # Development verification
 
-The application was exercised locally with Python 3.12 on Linux. The automated
+The application was exercised locally with Python 3.10 and 3.12 on Linux. The automated
 suite uses explicit fake market responses and generated price histories; these are
 software tests, not financial performance evidence.
 
-- 32 automated tests passed across accounting, historical execution, leakage
+- 38 automated tests passed on both Python versions across accounting, historical execution, leakage
   prevention, market parsing, persistence, restart/outage handling, and the full
   train/test/report/dashboard workflow.
+- Reproduced Coinbase's nanosecond timestamp parsing failure on Python 3.10 before
+  the fix. Regression tests now accept all eight reported timestamps, variable
+  fractional precision, and explicit timezone offsets. Malformed, timezone-less,
+  stale, and future quotes still fail validation.
 - The 1,600-bar, three-market synthetic command-line demo completed, producing
   separate evaluation/deployment models, an HTML/JSON report, data snapshots, fills,
   and equity exports.

@@ -4,6 +4,7 @@ from datetime import datetime, timezone
 import json
 import logging
 import math
+import re
 import time
 from urllib.error import HTTPError, URLError
 from urllib.parse import urlencode, quote
@@ -25,6 +26,23 @@ class DataError(RuntimeError):
 
 def iso(timestamp: int | float) -> str:
     return datetime.fromtimestamp(timestamp, timezone.utc).isoformat()
+
+
+def _quote_timestamp(value: str) -> float:
+    """Parse exchange timestamps consistently on Python 3.10 and newer."""
+    if not isinstance(value, str):
+        raise ValueError("quote timestamp must be a string")
+    match = re.fullmatch(
+        r"([0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2})"
+        r"(?:\.([0-9]+))?(Z|[+-](?:[01][0-9]|2[0-3]):[0-5][0-9])", value)
+    if match is None:
+        raise ValueError("quote timestamp must be ISO 8601 with a timezone")
+    whole, fraction, offset = match.groups()
+    # Coinbase sends nanoseconds; datetime stores microseconds. Python 3.10
+    # requires fractional seconds to have exactly three or six digits.
+    fraction = "." + fraction[:6].ljust(6, "0") if fraction else ""
+    offset = "+00:00" if offset == "Z" else offset
+    return datetime.fromisoformat(whole + fraction + offset).timestamp()
 
 
 def validate_frame(frame: pd.DataFrame, timeframe: int, *, continuous: bool = True) -> None:
@@ -106,7 +124,7 @@ class Coinbase:
             if raw.get("auction_mode", False):
                 raise ValueError("indicative auction quotes are not executable")
             bid, ask = float(raw["bids"][0][0]), float(raw["asks"][0][0])
-            ts = datetime.fromisoformat(raw["time"].replace("Z", "+00:00")).timestamp()
+            ts = _quote_timestamp(raw["time"])
             if not all(map(math.isfinite, [bid, ask, ts])) or not 0 < bid <= ask:
                 raise ValueError("invalid bid/ask")
             if not -5 <= now - ts <= self.config.app.quote_max_age_seconds:
